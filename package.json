@@ -56,7 +56,8 @@
     "test": "jest",
     "format": "prettier --write .",
     "icons": "node scripts/generate-icons.mjs",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "serve:web": "node scripts/serve-dist.mjs"
   },
   "private": true,
   "jest": {

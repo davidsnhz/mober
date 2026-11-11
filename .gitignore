@@ -54,3 +54,6 @@ yarn-error.*
 
 # tests
 coverage/
+
+.vercel
+.env*
