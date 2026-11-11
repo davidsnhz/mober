@@ -90,8 +90,18 @@ export default function RootLayout() {
                 }}
               >
                 <Stack.Screen name="index" />
+                <Stack.Screen name="persona/[id]" />
+                <Stack.Screen name="historial" />
+                <Stack.Screen name="ajustes/index" />
                 <Stack.Screen
                   name="nueva-deuda"
+                  options={{
+                    presentation: 'modal',
+                    contentStyle: { backgroundColor: colors.modalBackground },
+                  }}
+                />
+                <Stack.Screen
+                  name="deuda/[id]"
                   options={{
                     presentation: 'modal',
                     contentStyle: { backgroundColor: colors.modalBackground },

@@ -1,6 +1,5 @@
-import { View } from 'react-native';
+import { HistoryScreen } from '@/features/person/HistoryScreen';
 
-// Pantalla provisional: se completa en una fase posterior.
-export default function Pendiente() {
-  return <View />;
+export default function Historial() {
+  return <HistoryScreen />;
 }

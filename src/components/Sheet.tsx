@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
 import Animated, { SlideInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,7 +32,10 @@ export function Sheet({ visible, onClose, title, message, children }: SheetProps
       navigationBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'web' ? undefined : 'padding'}
+        style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}
+      >
         <Pressable
           accessibilityLabel="Cerrar"
           accessibilityRole="button"
@@ -82,7 +85,7 @@ export function Sheet({ visible, onClose, title, message, children }: SheetProps
           ) : null}
           <View style={{ marginTop: title || message ? 14 : 0 }}>{children}</View>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

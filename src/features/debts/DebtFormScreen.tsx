@@ -55,6 +55,7 @@ export function DebtFormScreen({ debtId, onFirstDebtSaved }: DebtFormScreenProps
   const addDebt = useDataStore((state) => state.addDebt);
   const updateDebt = useDataStore((state) => state.updateDebt);
   const deleteDebt = useDataStore((state) => state.deleteDebt);
+  const markPending = useDataStore((state) => state.markPending);
 
   const editing = useMemo(
     () => (debtId ? debts.find((debt) => debt.id === debtId) : undefined),
@@ -278,6 +279,18 @@ export function DebtFormScreen({ debtId, onFirstDebtSaved }: DebtFormScreenProps
             onSubmitEditing={() => Keyboard.dismiss()}
           />
 
+          {editing && editing.paidAt !== null ? (
+            <Button
+              label="Volver a pendiente"
+              variant="outline"
+              height={48}
+              onPress={() => {
+                void markPending([editing.id]);
+                close();
+                showToast({ message: 'La deuda vuelve a estar pendiente' });
+              }}
+            />
+          ) : null}
           {isEdit ? (
             <Button
               label="Borrar deuda"

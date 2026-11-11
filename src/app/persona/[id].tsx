@@ -1,6 +1,8 @@
-import { View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-// Pantalla provisional: se completa en una fase posterior.
-export default function Pendiente() {
-  return <View />;
+import { PersonScreen } from '@/features/person/PersonScreen';
+
+export default function Persona() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <PersonScreen personId={id} />;
 }
