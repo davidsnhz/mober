@@ -1,0 +1,6 @@
+node_modules
+dist
+.expo
+docs/diseno
+package-lock.json
+expo-env.d.ts

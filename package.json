@@ -1,22 +1,72 @@
 {
   "name": "mober",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo/metro-runtime": "~58.0.17",
     "expo": "~58.0.24",
+    "expo-constants": "~58.0.16",
+    "expo-contacts": "~58.0.10",
+    "expo-crypto": "~58.0.8",
+    "expo-file-system": "~58.0.13",
+    "expo-font": "~58.0.12",
+    "expo-haptics": "~58.0.8",
+    "expo-linking": "~58.0.17",
+    "expo-notifications": "~58.1.9",
+    "expo-router": "~58.0.31",
+    "expo-sharing": "~58.0.23",
+    "expo-splash-screen": "~58.0.14",
+    "expo-sqlite": "~58.0.16",
     "expo-status-bar": "~58.0.5",
+    "expo-system-ui": "~58.0.7",
+    "libphonenumber-js": "^1.13.16",
     "react": "19.3.0",
-    "react-native": "0.88.1"
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.11.1",
+    "react-native-screens": "~4.30.1",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "^0.21.4",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@types/jest": "30.0.0",
     "@types/react": "~19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~58.0.4",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "~30.5.2",
+    "jest-expo": "~58.0.14",
+    "opentype.js": "^2.0.0",
+    "prettier": "^3.10.0",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:web": "expo export -p web",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "format": "prettier --write .",
+    "icons": "node scripts/generate-icons.mjs",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
+  }
 }

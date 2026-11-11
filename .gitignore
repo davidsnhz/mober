@@ -39,3 +39,18 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# builds
+*.apk
+*.aab
+*.ipa
+/build
+
+# env
+.env*
+
+# Vercel
+.vercel
+
+# tests
+coverage/
