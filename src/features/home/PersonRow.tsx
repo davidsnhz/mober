@@ -28,7 +28,8 @@ export function PersonRow({ summary, now, index, isLast, onPress }: PersonRowPro
 
   const onlyDebt = pending.length === 1 ? pending[0] : undefined;
   const what = onlyDebt?.concept ?? plural(pending.length, 'deuda', 'deudas');
-  const subtitle = `${what} · ${formatAgo(oldestAt, now)}`;
+  const ago = formatAgo(oldestAt, now);
+  const subtitle = `${what} · ${ago}`;
   const isOld = daysBetween(oldestAt, now) >= OLD_DEBT_DAYS;
   const amount = formatMoney(totalCents);
 
@@ -57,9 +58,15 @@ export function PersonRow({ summary, now, index, isLast, onPress }: PersonRowPro
           <AppText size={16} weight="semibold" numberOfLines={1}>
             {person.name}
           </AppText>
-          <AppText size={13} secondary numberOfLines={1}>
-            {subtitle}
-          </AppText>
+          {/* El concepto se recorta si no cabe; "hace X días" se ve siempre entero. */}
+          <View style={{ flexDirection: 'row' }}>
+            <AppText size={13} secondary numberOfLines={1} style={{ flexShrink: 1 }}>
+              {what}
+            </AppText>
+            <AppText size={13} secondary numberOfLines={1} style={{ flexShrink: 0, marginLeft: 4 }}>
+              · {ago}
+            </AppText>
+          </View>
         </View>
         <View style={{ alignItems: 'flex-end', gap: 4 }}>
           <AppText size={16} weight="semibold" tabular>

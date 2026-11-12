@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- viewport-fit=cover: la app llega hasta los bordes y respeta las zonas seguras del móvil. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, shrink-to-fit=no"
+    />
+    <title>Mober</title>
+    <meta
+      name="description"
+      content="Lo que te deben, recordado. Apunta quién te debe dinero, cuánto y por qué."
+    />
+    <meta name="theme-color" content="#F4F4F2" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- PWA: "Añadir a pantalla de inicio" -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Mober" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Reinicio de estilos recomendado por react-native-web -->
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        overflow: hidden;
+        margin: 0;
+        background-color: #f4f4f2;
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #000000;
+        }
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* El foco de los campos lo dibuja la app (borde negro de 2 pt), no el navegador. */
+      input,
+      textarea {
+        outline: none;
+      }
+      /* Los botones no se seleccionan como texto al pulsarlos. */
+      [role='button'],
+      [role='tab'],
+      [role='switch'],
+      [role='link'] {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Mober necesita JavaScript para funcionar.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
