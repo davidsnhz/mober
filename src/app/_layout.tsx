@@ -93,6 +93,7 @@ export default function RootLayout() {
                 <Stack.Screen name="persona/[id]" />
                 <Stack.Screen name="historial" />
                 <Stack.Screen name="ajustes/index" />
+                <Stack.Screen name="ajustes/plantilla" />
                 <Stack.Screen
                   name="nueva-deuda"
                   options={{

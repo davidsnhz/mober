@@ -1,6 +1,6 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import { AppText } from '@/components/AppText';
@@ -8,24 +8,34 @@ import { Avatar } from '@/components/Avatar';
 import { BigAmount } from '@/components/BigAmount';
 import { Button } from '@/components/Button';
 import { IconButton } from '@/components/IconButton';
-import { BackIcon, MoreIcon } from '@/components/icons';
+import { BackIcon, ChatIcon, MoreIcon } from '@/components/icons';
 import { useScreenInsets } from '@/components/Screen';
 import { ConfirmSheet, OptionSheet, type SheetOption } from '@/components/Sheet';
+import { contactsAvailable, pickContact } from '@/features/contacts/pickContact';
+import { NATIVE_ONLY_NOTE } from '@/features/contacts/types';
+import { openWhatsApp } from '@/features/whatsapp/openWhatsApp';
+import { buildReminderMessage } from '@/features/whatsapp/templates';
 import { formatShortDate } from '@/lib/dates';
 import { hapticSuccess, hapticWarning } from '@/lib/haptics';
 import { formatAmount, formatMoney } from '@/lib/money';
+import { formatPhone } from '@/lib/phone';
 import { plural } from '@/lib/text';
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber';
 import { useNow } from '@/lib/useNow';
 import { selectPersonDebts } from '@/store/selectors';
 import { useDataStore } from '@/store/useDataStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { showToast } from '@/store/useToastStore';
 import { layout, radius, useTheme } from '@/theme';
 
+import { ContactBadge } from './ContactBadge';
 import { PaidDebtRow, PendingDebtRow } from './DebtRows';
 import { RenameSheet } from './RenameSheet';
 
-type OpenSheet = 'menu' | 'rename' | 'delete' | null;
+type OpenSheet = 'menu' | 'rename' | 'delete' | 'noPhone' | 'phones' | null;
+
+/** Al cerrar una hoja en iOS hay que esperar a que termine antes de abrir otra vista nativa. */
+const AFTER_SHEET_MS = Platform.OS === 'ios' ? 350 : 0;
 
 export function PersonScreen({ personId }: { personId: string }) {
   const router = useRouter();
@@ -38,6 +48,9 @@ export function PersonScreen({ personId }: { personId: string }) {
   const markPaid = useDataStore((state) => state.markPaid);
   const markPending = useDataStore((state) => state.markPending);
   const deletePerson = useDataStore((state) => state.deletePerson);
+  const updatePerson = useDataStore((state) => state.updatePerson);
+  const messageTone = useSettingsStore((state) => state.settings.messageTone);
+  const customTemplate = useSettingsStore((state) => state.settings.customTemplate);
 
   const { pending, paid, totalCents } = useMemo(
     () => selectPersonDebts(debts, personId),
@@ -45,6 +58,10 @@ export function PersonScreen({ personId }: { personId: string }) {
   );
   const animatedTotal = useAnimatedNumber(totalCents);
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const [phoneChoices, setPhoneChoices] = useState<{ contactId: string; phones: string[] }>({
+    contactId: '',
+    phones: [],
+  });
 
   if (!person) return <Redirect href="/" />;
 
@@ -80,6 +97,63 @@ export function PersonScreen({ personId }: { personId: string }) {
     showToast({ message: `${person.name} se ha borrado` });
   };
 
+  const saveContact = (contactId: string, phone: string) => {
+    void updatePerson(person.id, { contactId, phone });
+    showToast({ message: 'Contacto vinculado' });
+  };
+
+  const linkContact = async () => {
+    const result = await pickContact();
+    if (result.status === 'cancelled') return;
+    if (result.status === 'unavailable') {
+      showToast({ message: NATIVE_ONLY_NOTE });
+      return;
+    }
+    if (result.status === 'denied') {
+      showToast({ message: 'Mober necesita permiso para leer el contacto que elijas' });
+      return;
+    }
+    if (result.status === 'error') {
+      showToast({ message: 'No se pudo abrir tu agenda. Inténtalo de nuevo.' });
+      return;
+    }
+    const [first, ...others] = result.phones;
+    if (first === undefined) {
+      showToast({ message: 'Ese contacto no tiene un teléfono válido' });
+    } else if (others.length === 0) {
+      saveContact(result.contactId, first);
+    } else {
+      setPhoneChoices({ contactId: result.contactId, phones: result.phones });
+      setSheet('phones');
+    }
+  };
+
+  /** Abre el selector de contactos cuando la hoja que lo lanzó ya se ha cerrado. */
+  const linkContactAfterSheet = () => {
+    setTimeout(() => void linkContact(), AFTER_SHEET_MS);
+  };
+
+  const unlinkContact = () => {
+    void updatePerson(person.id, { contactId: null, phone: null });
+    showToast({ message: 'Contacto desvinculado' });
+  };
+
+  const sendReminder = async (phone: string | null) => {
+    const message = buildReminderMessage({
+      personName: person.name,
+      debts: pending,
+      tone: messageTone,
+      customTemplate,
+    });
+    const opened = await openWhatsApp(phone, message);
+    if (!opened) showToast({ message: 'No se pudo abrir WhatsApp' });
+  };
+
+  const remind = () => {
+    if (person.phone) void sendReminder(person.phone);
+    else setSheet('noPhone');
+  };
+
   const editDebt = (debtId: string) =>
     router.push({ pathname: '/deuda/[id]', params: { id: debtId } });
 
@@ -92,6 +166,18 @@ export function PersonScreen({ personId }: { personId: string }) {
 
   const menuOptions: SheetOption[] = [
     { key: 'rename', label: 'Editar nombre', onPress: () => setSheet('rename') },
+    {
+      key: 'contact',
+      label: person.phone ? 'Cambiar contacto' : 'Vincular contacto',
+      detail: contactsAvailable
+        ? person.phone
+          ? formatPhone(person.phone)
+          : undefined
+        : NATIVE_ONLY_NOTE,
+      disabled: !contactsAvailable,
+      onPress: linkContactAfterSheet,
+    },
+    ...(person.phone ? [{ key: 'unlink', label: 'Quitar contacto', onPress: unlinkContact }] : []),
     {
       key: 'delete',
       label: 'Borrar persona',
@@ -138,6 +224,7 @@ export function PersonScreen({ personId }: { personId: string }) {
           >
             {person.name}
           </AppText>
+          <ContactBadge linked={person.phone !== null} onLink={() => void linkContact()} />
           <BigAmount
             value={formatAmount(animatedTotal)}
             size={48}
@@ -150,6 +237,12 @@ export function PersonScreen({ personId }: { personId: string }) {
 
         {pending.length > 0 ? (
           <Animated.View layout={LinearTransition.duration(220)} style={{ gap: 10 }}>
+            <Button
+              label="Recordar por WhatsApp"
+              icon={<ChatIcon color={colors.onAccent} />}
+              onPress={remind}
+              accessibilityHint="Abre WhatsApp con el mensaje escrito, sin enviarlo"
+            />
             <Button label="Marcar todo como pagado" variant="outline" onPress={payAll} />
           </Animated.View>
         ) : null}
@@ -224,6 +317,36 @@ export function PersonScreen({ personId }: { personId: string }) {
         onClose={() => setSheet(null)}
         title={person.name}
         options={menuOptions}
+      />
+      <OptionSheet
+        visible={sheet === 'noPhone'}
+        onClose={() => setSheet(null)}
+        title={`${person.name} no tiene teléfono`}
+        message="Vincula un contacto para abrir su chat directamente, o elige el chat tú en WhatsApp."
+        options={[
+          {
+            key: 'link',
+            label: 'Vincular contacto',
+            detail: contactsAvailable ? undefined : NATIVE_ONLY_NOTE,
+            disabled: !contactsAvailable,
+            onPress: linkContactAfterSheet,
+          },
+          {
+            key: 'choose',
+            label: 'Elegir el chat en WhatsApp',
+            onPress: () => void sendReminder(null),
+          },
+        ]}
+      />
+      <OptionSheet
+        visible={sheet === 'phones'}
+        onClose={() => setSheet(null)}
+        title="¿Qué teléfono usa en WhatsApp?"
+        options={phoneChoices.phones.map((phone) => ({
+          key: phone,
+          label: formatPhone(phone),
+          onPress: () => saveContact(phoneChoices.contactId, phone),
+        }))}
       />
       <RenameSheet visible={sheet === 'rename'} person={person} onClose={() => setSheet(null)} />
       <ConfirmSheet

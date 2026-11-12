@@ -1,6 +1,5 @@
-import { View } from 'react-native';
+import { SettingsScreen } from '@/features/settings/SettingsScreen';
 
-// Pantalla provisional: se completa en una fase posterior.
-export default function Pendiente() {
-  return <View />;
+export default function Ajustes() {
+  return <SettingsScreen />;
 }

@@ -51,7 +51,7 @@ export function TextField({
           onBlur?.(event);
         }}
         style={{
-          minHeight: 52,
+          minHeight: multiline ? 120 : 52,
           borderRadius: radius.field,
           borderWidth: 2,
           borderColor: focused ? colors.text : 'transparent',
