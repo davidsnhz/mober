@@ -34,17 +34,12 @@ export function PendingDebtRow({ debt, now, isLast, onPaid, onPress }: PendingDe
       layout={LinearTransition.duration(220)}
       style={{ borderBottomWidth: isLast ? 0 : 1, borderBottomColor: colors.separator }}
     >
-      <SwipeToPayRow onPaid={onPaid}>
-        <Touchable
-          onPress={onPress}
-          pressedScale={1}
-          pressedOpacity={0.6}
-          accessibilityLabel={`${concept}, ${amount}, ${date}`}
-          accessibilityHint="Toca para editar. Desliza a la derecha para marcar como pagado"
-          accessibilityActions={[{ name: 'pagar', label: 'Marcar como pagado' }]}
-          onAccessibilityAction={(event) => {
-            if (event.nativeEvent.actionName === 'pagar') onPaid();
-          }}
+      <SwipeToPayRow
+        onPaid={onPaid}
+        onPress={onPress}
+        accessibilityLabel={`${concept}, ${amount}, ${date}`}
+      >
+        <View
           style={{
             flex: 1,
             flexDirection: 'row',
@@ -65,7 +60,7 @@ export function PendingDebtRow({ debt, now, isLast, onPaid, onPress }: PendingDe
           <AppText size={16} weight="semibold" tabular>
             {amount}
           </AppText>
-        </Touchable>
+        </View>
       </SwipeToPayRow>
     </Animated.View>
   );

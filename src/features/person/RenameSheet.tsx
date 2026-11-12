@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
@@ -19,14 +19,19 @@ interface RenameSheetProps {
 
 /** Hoja para editar el nombre de una persona. */
 export function RenameSheet({ visible, person, onClose }: RenameSheetProps) {
+  return (
+    <Sheet visible={visible} onClose={onClose} title="Editar nombre">
+      {/* El formulario se monta al abrir la hoja, así siempre parte del nombre actual. */}
+      {visible ? <RenameForm person={person} onClose={onClose} /> : null}
+    </Sheet>
+  );
+}
+
+function RenameForm({ person, onClose }: { person: Person; onClose: () => void }) {
   const { colors } = useTheme();
   const people = useDataStore((state) => state.people);
   const updatePerson = useDataStore((state) => state.updatePerson);
   const [name, setName] = useState(person.name);
-
-  useEffect(() => {
-    if (visible) setName(person.name);
-  }, [visible, person.name]);
 
   const cleaned = cleanText(name);
   const duplicate = findPersonByName(people, cleaned);
@@ -40,28 +45,26 @@ export function RenameSheet({ visible, person, onClose }: RenameSheetProps) {
   };
 
   return (
-    <Sheet visible={visible} onClose={onClose} title="Editar nombre">
-      <View style={{ gap: 12 }}>
-        <TextField
-          label="Nombre"
-          value={name}
-          onChangeText={setName}
-          autoFocus
-          autoCapitalize="words"
-          autoCorrect={false}
-          maxLength={60}
-          returnKeyType="done"
-          onSubmitEditing={save}
-          background={colors.surfaceMuted}
-          focusedBackground={colors.surface}
-        />
-        {taken ? (
-          <AppText size={13} color={colors.danger} style={{ paddingLeft: 4 }}>
-            Ya tienes a otra persona con ese nombre.
-          </AppText>
-        ) : null}
-        <Button label="Guardar" onPress={save} disabled={!canSave} />
-      </View>
-    </Sheet>
+    <View style={{ gap: 12 }}>
+      <TextField
+        label="Nombre"
+        value={name}
+        onChangeText={setName}
+        autoFocus
+        autoCapitalize="words"
+        autoCorrect={false}
+        maxLength={60}
+        returnKeyType="done"
+        onSubmitEditing={save}
+        background={colors.surfaceMuted}
+        focusedBackground={colors.surface}
+      />
+      {taken ? (
+        <AppText size={13} color={colors.danger} style={{ paddingLeft: 4 }}>
+          Ya tienes a otra persona con ese nombre.
+        </AppText>
+      ) : null}
+      <Button label="Guardar" onPress={save} disabled={!canSave} />
+    </View>
   );
 }
