@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { IconButton } from '@/components/IconButton';
@@ -10,6 +10,7 @@ import { Segmented } from '@/components/Segmented';
 import { OptionSheet } from '@/components/Sheet';
 import { NATIVE_ONLY_NOTE } from '@/features/contacts/types';
 import { notificationsAvailable } from '@/features/notifications/availability';
+import { useNotificationPermission } from '@/features/notifications/notifications';
 import { PRESET_TONES, TONE_PRESETS, type PresetTone } from '@/features/whatsapp/templates';
 import { formatTime, WEEKDAYS } from '@/lib/dates';
 import {
@@ -41,6 +42,15 @@ export function SettingsScreen() {
   const settings = useSettingsStore((state) => state.settings);
   const update = useSettingsStore((state) => state.update);
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const permission = useNotificationPermission();
+
+  const remindersNote = !notificationsAvailable
+    ? NATIVE_ONLY_NOTE
+    : permission === 'denied'
+      ? 'Las notificaciones de Mober están desactivadas en los ajustes del sistema.'
+      : permission === 'undetermined'
+        ? 'Mober te pedirá permiso para avisarte al guardar tu primera deuda.'
+        : undefined;
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
@@ -85,10 +95,7 @@ export function SettingsScreen() {
           </AppText>
         </View>
 
-        <Section
-          title="Recordatorios"
-          footnote={notificationsAvailable ? undefined : NATIVE_ONLY_NOTE}
-        >
+        <Section title="Recordatorios" footnote={remindersNote}>
           <Card>
             <LinkRow
               label="Resumen"
@@ -112,9 +119,16 @@ export function SettingsScreen() {
               label="Ocultar cantidades en avisos"
               value={settings.hideAmounts}
               disabled={!notificationsAvailable}
-              isLast
+              isLast={permission !== 'denied'}
               onChange={(hideAmounts) => void update({ hideAmounts })}
             />
+            {permission === 'denied' ? (
+              <LinkRow
+                label="Activar notificaciones"
+                isLast
+                onPress={() => void Linking.openSettings()}
+              />
+            ) : null}
           </Card>
         </Section>
 

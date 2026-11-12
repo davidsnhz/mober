@@ -11,6 +11,8 @@ module.exports = defineConfig([
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      // TypeScript ya comprueba los miembros de un espacio de nombres importado.
+      'import/namespace': 'off',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },

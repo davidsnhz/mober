@@ -5,7 +5,7 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useMemo } from 'react';
@@ -16,6 +16,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { ToastHost } from '@/components/ToastHost';
 import { WebFrame } from '@/components/WebFrame';
+import {
+  startNotificationSync,
+  useNotificationResponses,
+} from '@/features/notifications/notifications';
 import { useDataStore } from '@/store/useDataStore';
 import { useTheme } from '@/theme';
 
@@ -41,6 +45,14 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();
   }, [ready]);
+
+  // Notificaciones: se reprograman al abrir la app y cada vez que cambian datos o ajustes.
+  const router = useRouter();
+  useNotificationResponses(router);
+  useEffect(() => {
+    if (status !== 'ready') return;
+    return startNotificationSync();
+  }, [status]);
 
   const navigationTheme = useMemo(() => {
     const base = dark ? DarkTheme : DefaultTheme;

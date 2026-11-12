@@ -38,14 +38,14 @@ import { layout, useTheme } from '@/theme';
 interface DebtFormScreenProps {
   /** Si se indica, el formulario edita esa deuda en lugar de crear una nueva. */
   debtId?: string;
-  /** Se llama tras guardar la primera deuda de la app. */
-  onFirstDebtSaved?: () => void;
+  /** Se llama tras guardar una deuda nueva. */
+  onDebtSaved?: () => void;
 }
 
 type Field = 'who' | 'why';
 
 /** Modal "Nueva deuda" (y edición de una deuda existente). */
-export function DebtFormScreen({ debtId, onFirstDebtSaved }: DebtFormScreenProps) {
+export function DebtFormScreen({ debtId, onDebtSaved }: DebtFormScreenProps) {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useScreenInsets();
@@ -108,7 +108,7 @@ export function DebtFormScreen({ debtId, onFirstDebtSaved }: DebtFormScreenProps
         close();
         return;
       }
-      const result = await addDebt({
+      await addDebt({
         personId: activePersonId ?? undefined,
         personName: name,
         amountCents,
@@ -116,7 +116,7 @@ export function DebtFormScreen({ debtId, onFirstDebtSaved }: DebtFormScreenProps
       });
       hapticSuccess();
       close();
-      if (result.isFirstDebt) onFirstDebtSaved?.();
+      onDebtSaved?.();
     } catch (error) {
       console.error('No se pudo guardar la deuda', error);
       showToast({ message: 'No se pudo guardar. Inténtalo de nuevo.' });
