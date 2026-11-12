@@ -12,6 +12,8 @@ segundos: cantidad, nombre y, si quieres, el concepto. A partir de ahí, Mober s
 
 **Versión web:** https://mober-beta.vercel.app
 
+**Repositorio:** https://github.com/davidsnhz/mober
+
 ## Capturas
 
 |               Inicio                |                  Nueva deuda                  |              Detalle de persona               |
