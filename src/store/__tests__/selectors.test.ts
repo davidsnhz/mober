@@ -4,6 +4,7 @@ import {
   computeTotals,
   countPaid,
   findPersonByName,
+  orphanedPersonId,
   selectPersonDebts,
   suggestPeople,
   summarizePeople,
@@ -86,5 +87,26 @@ describe('autocompletado de nombres', () => {
 
   it('sin texto propone a las personas usadas más recientemente', () => {
     expect(suggestPeople(people, debts, '', 2).map((item) => item.id)).toEqual(['p', 'l']);
+  });
+});
+
+describe('borrar una deuda apuntada por error', () => {
+  it('si era la única deuda de la persona, la persona se borra con ella', () => {
+    const solo = [debt('9', 'x', 700, 10)];
+    expect(orphanedPersonId(people, solo, '9')).toBe('x');
+  });
+
+  it('si le quedan otras deudas, pendientes o pagadas, la persona se conserva', () => {
+    expect(orphanedPersonId(people, debts, '1')).toBeNull();
+    expect(orphanedPersonId(people, debts, '3')).toBeNull();
+  });
+
+  it('con un contacto vinculado la persona se conserva aunque se quede sin deudas', () => {
+    const linked = [{ ...person('c', 'Carlos Gil'), phone: '+34612345678' }];
+    expect(orphanedPersonId(linked, [debt('9', 'c', 700, 10)], '9')).toBeNull();
+  });
+
+  it('una deuda que no existe no borra a nadie', () => {
+    expect(orphanedPersonId(people, debts, 'nope')).toBeNull();
   });
 });

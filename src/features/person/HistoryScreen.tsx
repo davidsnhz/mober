@@ -4,6 +4,7 @@ import { ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { IconButton } from '@/components/IconButton';
+import { useDebtActions } from '@/features/debts/useDebtActions';
 import { BackIcon } from '@/components/icons';
 import { useScreenInsets } from '@/components/Screen';
 import { formatMoney, sumCents } from '@/lib/money';
@@ -20,6 +21,7 @@ export function HistoryScreen() {
   const { colors } = useTheme();
   const insets = useScreenInsets();
   const now = useNow();
+  const debtActions = useDebtActions({ linkToPerson: true });
 
   const people = useDataStore((state) => state.people);
   const debts = useDataStore((state) => state.debts);
@@ -82,14 +84,16 @@ export function HistoryScreen() {
                 now={now}
                 detail={names.get(debt.personId)}
                 isLast={index === paid.length - 1}
-                onPress={() =>
-                  router.push({ pathname: '/persona/[id]', params: { id: debt.personId } })
-                }
+                onPress={() => debtActions.open(debt.id)}
               />
             ))}
           </View>
+          <AppText size={12} secondary align="center" style={{ marginTop: 2 }}>
+            Toca una deuda para editarla o borrarla
+          </AppText>
         </View>
       )}
+      {debtActions.sheets}
     </ScrollView>
   );
 }

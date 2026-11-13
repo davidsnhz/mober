@@ -7,6 +7,8 @@ export interface ToastOptions {
   onAction?: () => void;
   /** Tiempo en pantalla. Por defecto, 5 segundos. */
   durationMs?: number;
+  /** Sube el aviso para dejar libre el botón fijo de la pantalla. */
+  aboveButton?: boolean;
 }
 
 export interface Toast extends ToastOptions {

@@ -5,7 +5,7 @@ import type { Debt, DebtPatch, Person, PersonPatch, Snapshot } from '@/db/types'
 import { newId } from '@/lib/id';
 import { cleanText } from '@/lib/text';
 
-import { findPersonByName } from './selectors';
+import { findPersonByName, orphanedPersonId } from './selectors';
 import { useSettingsStore } from './useSettingsStore';
 
 export interface NewDebtInput {
@@ -37,6 +37,7 @@ interface DataState {
 
   addDebt: (input: NewDebtInput) => Promise<NewDebtResult>;
   updateDebt: (id: string, patch: DebtPatch) => Promise<void>;
+  /** Borra una deuda del todo; si la persona se queda sin ninguna, se borra con ella. */
   deleteDebt: (id: string) => Promise<void>;
   /** Marca deudas como pagadas ahora; devuelve los ids para poder deshacer. */
   markPaid: (ids: readonly string[]) => Promise<void>;
@@ -128,9 +129,17 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
 
   deleteDebt: async (id) => {
-    set({ debts: get().debts.filter((debt) => debt.id !== id) });
+    const { people, debts } = get();
+    const orphanId = orphanedPersonId(people, debts, id);
+    set({
+      debts: debts.filter((debt) => debt.id !== id),
+      people: orphanId ? people.filter((person) => person.id !== orphanId) : people,
+    });
     try {
-      await (await getRepository()).deleteDebt(id);
+      const repository = await getRepository();
+      // Borrar a la persona borra también sus deudas.
+      if (orphanId) await repository.deletePerson(orphanId);
+      else await repository.deleteDebt(id);
     } catch (error) {
       logWriteError(error);
       await get().reload();

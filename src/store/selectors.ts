@@ -78,6 +78,27 @@ export function selectPersonDebts(debts: readonly Debt[], personId: string): Per
   return { pending, paid, totalCents: sumCents(pending.map((debt) => debt.amountCents)) };
 }
 
+/**
+ * Al borrar una deuda, la persona se va con ella si ya no le queda ninguna otra (ni pendiente
+ * ni pagada) y no tiene un contacto vinculado: así un nombre apuntado por error no se queda
+ * para siempre en las sugerencias. Devuelve el id de la persona a borrar, o null.
+ */
+export function orphanedPersonId(
+  people: readonly Person[],
+  debts: readonly Debt[],
+  debtId: string,
+): string | null {
+  const debt = debts.find((candidate) => candidate.id === debtId);
+  if (!debt) return null;
+  const hasOtherDebts = debts.some(
+    (candidate) => candidate.personId === debt.personId && candidate.id !== debtId,
+  );
+  if (hasOtherDebts) return null;
+  const person = people.find((candidate) => candidate.id === debt.personId);
+  if (!person || person.phone !== null || person.contactId !== null) return null;
+  return person.id;
+}
+
 /** Persona cuyo nombre coincide sin distinguir mayúsculas ni acentos. */
 export function findPersonByName(people: readonly Person[], name: string): Person | undefined {
   const target = normalize(name);

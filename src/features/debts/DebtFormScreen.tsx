@@ -29,7 +29,7 @@ import {
   inputToCents,
   type KeypadKey,
 } from '@/lib/money';
-import { cleanText } from '@/lib/text';
+import { cleanText, firstName } from '@/lib/text';
 import { findPersonByName, suggestPeople } from '@/store/selectors';
 import { useDataStore } from '@/store/useDataStore';
 import { showToast } from '@/store/useToastStore';
@@ -108,7 +108,7 @@ export function DebtFormScreen({ debtId, onDebtSaved }: DebtFormScreenProps) {
         close();
         return;
       }
-      await addDebt({
+      const created = await addDebt({
         personId: activePersonId ?? undefined,
         personName: name,
         amountCents,
@@ -116,6 +116,12 @@ export function DebtFormScreen({ debtId, onDebtSaved }: DebtFormScreenProps) {
       });
       hapticSuccess();
       close();
+      showToast({
+        message: `${formatMoney(amountCents)} apuntados a ${firstName(created.person.name)}`,
+        actionLabel: 'Deshacer',
+        onAction: () => void deleteDebt(created.debt.id),
+        aboveButton: true,
+      });
       onDebtSaved?.();
     } catch (error) {
       console.error('No se pudo guardar la deuda', error);

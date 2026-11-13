@@ -4,7 +4,7 @@ import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useToastStore } from '@/store/useToastStore';
-import { palette, useTheme } from '@/theme';
+import { layout, palette, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 import { Touchable } from './Touchable';
@@ -33,7 +33,8 @@ export function ToastHost() {
         position: 'absolute',
         left: 16,
         right: 16,
-        bottom: Math.max(insets.bottom, 16) + 8,
+        bottom:
+          Math.max(insets.bottom, 16) + 8 + (toast.aboveButton ? layout.buttonHeight + 12 : 0),
         alignItems: 'center',
       }}
     >

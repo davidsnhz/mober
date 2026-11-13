@@ -12,6 +12,7 @@ import { BackIcon, ChatIcon, MoreIcon } from '@/components/icons';
 import { useScreenInsets } from '@/components/Screen';
 import { ConfirmSheet, OptionSheet, type SheetOption } from '@/components/Sheet';
 import { contactsAvailable, pickContact } from '@/features/contacts/pickContact';
+import { useDebtActions } from '@/features/debts/useDebtActions';
 import { NATIVE_ONLY_NOTE } from '@/features/contacts/types';
 import { openWhatsApp } from '@/features/whatsapp/openWhatsApp';
 import { buildReminderMessage } from '@/features/whatsapp/templates';
@@ -58,6 +59,7 @@ export function PersonScreen({ personId }: { personId: string }) {
   );
   const animatedTotal = useAnimatedNumber(totalCents);
   const [sheet, setSheet] = useState<OpenSheet>(null);
+  const debtActions = useDebtActions();
   const [phoneChoices, setPhoneChoices] = useState<{ contactId: string; phones: string[] }>({
     contactId: '',
     phones: [],
@@ -153,9 +155,6 @@ export function PersonScreen({ personId }: { personId: string }) {
     if (person.phone) void sendReminder(person.phone);
     else setSheet('noPhone');
   };
-
-  const editDebt = (debtId: string) =>
-    router.push({ pathname: '/deuda/[id]', params: { id: debtId } });
 
   const oldest = pending[0];
   const summary = oldest
@@ -271,13 +270,18 @@ export function PersonScreen({ personId }: { personId: string }) {
                   now={now}
                   isLast={index === pending.length - 1}
                   onPaid={() => pay([debt.id], 'Marcada como pagada')}
-                  onPress={() => editDebt(debt.id)}
+                  onPress={() => debtActions.open(debt.id)}
                 />
               ))}
             </View>
-            <AppText size={12} secondary align="center">
-              Desliza a la derecha para marcar como pagado
-            </AppText>
+            <View style={{ gap: 2 }}>
+              <AppText size={12} secondary align="center">
+                Desliza a la derecha para marcar como pagado
+              </AppText>
+              <AppText size={12} secondary align="center">
+                Toca una deuda para editarla o borrarla
+              </AppText>
+            </View>
           </Animated.View>
         ) : null}
 
@@ -304,7 +308,7 @@ export function PersonScreen({ personId }: { personId: string }) {
                   debt={debt}
                   now={now}
                   isLast={index === paid.length - 1}
-                  onPress={() => editDebt(debt.id)}
+                  onPress={() => debtActions.open(debt.id)}
                 />
               ))}
             </View>
@@ -312,6 +316,7 @@ export function PersonScreen({ personId }: { personId: string }) {
         ) : null}
       </ScrollView>
 
+      {debtActions.sheets}
       <OptionSheet
         visible={sheet === 'menu'}
         onClose={() => setSheet(null)}
